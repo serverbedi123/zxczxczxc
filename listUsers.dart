@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:diemchat/Screens/filter_group.dart';
 import 'package:diemchat/Screens/user_gifts.dart';
 import 'package:diemchat/Screens/widgets/create_group.dart';
@@ -13,6 +13,7 @@ import 'package:diemchat/Screens/widgets/groopLength.dart';
 import 'package:diemchat/Screens/widgets/user_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,13 +24,10 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
-import 'package:toast/toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'chat.dart';
 
 import 'dart:math' as math;
-import 'groupChat/groupChat.dart';
-import 'groupChat/videoCall.dart';
-import 'groupChat/voiceCall.dart';
 
 class ListUsers extends StatefulWidget {
   @override
@@ -111,7 +109,7 @@ class ListUsersState extends State<ListUsers>
         .then((offlineUsers) async {
       if (cekilecekKullaniciSayisi < 8) {
         for (var i = 0; i < 8; i++) {
-          if (offlineUsers.docs[i].id != _auth.currentUser.uid &&
+          if (offlineUsers.docs[i].id != _auth.currentUser!.uid &&
               cekilecekKullaniciSayisi > 0) {
             if (offlineUsers.docs[i].data().containsKey('banned')) {
               if (!offlineUsers.docs[i]['banned']) {
@@ -195,7 +193,7 @@ class ListUsersState extends State<ListUsers>
   }
 
   void showUserDialog(BuildContext context, name, image, phone, id,
-      {GetCredits Function(dynamic context) builder}) {
+      {GetCredits Function(dynamic context)? builder}) {
     showGeneralDialog(
       barrierDismissible: true,
       barrierLabel: "Barrier",
@@ -220,7 +218,7 @@ class ListUsersState extends State<ListUsers>
     );
   }
 
-  TabController _controller;
+  late TabController _controller;
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   void _onRefresh() async {
@@ -245,7 +243,7 @@ class ListUsersState extends State<ListUsers>
   searchUser() {
     searchList.clear();
     allUsers.forEach((element) {
-      if (element.id != _auth.currentUser.uid) {
+      if (element.id != _auth.currentUser!.uid) {
         if (element["nick"].toLowerCase().contains(searchQuery.toLowerCase()) ||
             element["bio"].toLowerCase().contains(searchQuery.toLowerCase())) {
           setState(() {
@@ -263,7 +261,7 @@ class ListUsersState extends State<ListUsers>
 
   bool first = true;
   bool searchLoading = false;
-  String searchQuery;
+  String searchQuery = '';
   List<DocumentSnapshot> allUsers = [];
   @override
   Widget build(BuildContext context) {
@@ -544,7 +542,7 @@ class ListUsersState extends State<ListUsers>
                       complete: Container(),
                     ),
                     footer: CustomFooter(
-                      builder: (BuildContext context, LoadStatus mode) {
+                      builder: (BuildContext context, LoadStatus? mode) {
                         Widget body;
                         if (mode == LoadStatus.idle) {
                           body = Text("pull up load");
@@ -598,7 +596,7 @@ class ListUsersState extends State<ListUsers>
                                                           peerID: doc.id,
                                                           peerName: doc["nick"],
                                                           currentUserId: _auth
-                                                              .currentUser.uid,
+                                                              .currentUser!.uid,
                                                         )));
                                           },
                                           child: Container(
@@ -816,7 +814,7 @@ class ListUsersState extends State<ListUsers>
                                                               peerName:
                                                                   doc["nick"],
                                                               currentUserId: _auth
-                                                                  .currentUser
+                                                                  .currentUser!
                                                                   .uid,
                                                             )));
                                               },
@@ -1000,9 +998,9 @@ class ListUsersState extends State<ListUsers>
                                           builder: (context) => GroupChat(
                                                 joins: doc['joins'],
                                                 joined: doc["joins"].contains(
-                                                    _auth.currentUser.uid),
+                                                    _auth.currentUser!.uid),
                                                 currentuser:
-                                                    _auth.currentUser.uid,
+                                                    _auth.currentUser!.uid,
                                                 currentusername: globalName,
                                                 currentuserimage: globalImage,
                                                 peerID: doc.id,
@@ -1022,7 +1020,7 @@ class ListUsersState extends State<ListUsers>
                                               groupName: doc['groupName'],
                                               kisiler: doc['joins'],
                                               joined: doc['joins'].contains(
-                                                  _auth.currentUser.uid),
+                                                  _auth.currentUser!.uid),
                                               documentId: doc.id)));
                                 } else if (doc['type'] == 1) {
                                   Navigator.push(
@@ -1033,7 +1031,7 @@ class ListUsersState extends State<ListUsers>
                                               groupName: doc['groupName'],
                                               kisiler: doc['joins'],
                                               joined: doc['joins'].contains(
-                                                  _auth.currentUser.uid),
+                                                  _auth.currentUser!.uid),
                                               documentId: doc.id)));
                                 }
                               },
@@ -1195,11 +1193,13 @@ class ListUsersState extends State<ListUsers>
                                                                             .circular(5),
                                                                     badgeColor:
                                                                         appColor,
-                                                                    position: BadgePosition.topEnd(
-                                                                        top:
-                                                                            -12,
-                                                                        end:
-                                                                            -4),
+                                                                    position: badges
+                                                                            .BadgePosition
+                                                                        .topEnd(
+                                                                            top:
+                                                                                -12,
+                                                                            end:
+                                                                                -4),
                                                                     padding: EdgeInsets.symmetric(
                                                                         horizontal:
                                                                             5,
@@ -1251,7 +1251,7 @@ class ListUsersState extends State<ListUsers>
                                                         itemBuilder: (context,
                                                             int index) {
                                                           return GroopLength(
-                                                            type: null,
+                                                            type: 0,
                                                             userId: doc["joins"]
                                                                 [index],
                                                           );
@@ -1284,9 +1284,9 @@ class ListUsersState extends State<ListUsers>
                           if (snapshot.hasData) {
                             return Container(
                               width: MediaQuery.of(context).size.width,
-                              child: snapshot.data.docs.length > 0
+                              child: snapshot.data!.docs.length > 0
                                   ? ListView.builder(
-                                      itemCount: snapshot.data.docs.length,
+                                      itemCount: snapshot.data!.docs.length,
                                       shrinkWrap: true,
                                       itemBuilder: (context, int index) {
                                         DocumentSnapshot doc =
@@ -1537,12 +1537,15 @@ class ListUsersState extends State<ListUsers>
                                                                         if (snapshot
                                                                             .hasData) {
                                                                           return snapshot.data.snapshot.exists
-                                                                              ? Badge(
-                                                                                  shape: BadgeShape.square,
-                                                                                  borderRadius: BorderRadius.circular(5),
-                                                                                  badgeColor: appColor,
-                                                                                  position: BadgePosition.topEnd(top: -12, end: -4),
-                                                                                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                                                              ? badges.Badge(
+                                                                                  badgeStyle: badges.BadgeStyle(
+                                                                                    shape: badges.BadgeShape.square,
+                                                                                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                                                                    borderSide: BorderSide(color: Colors.white, width: 1),
+                                                                                    badgeRadius: 5,
+                                                                                    badgeColor: appColor,
+                                                                                  ),
+                                                                                  position: badges.BadgePosition.topEnd(top: -12, end: -4),
                                                                                   badgeContent: Text(
                                                                                     snapshot.data.snapshot.value.length.toString(),
                                                                                     style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
